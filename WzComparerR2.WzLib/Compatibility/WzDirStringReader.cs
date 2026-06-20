@@ -31,9 +31,9 @@ namespace WzComparerR2.WzLib.Compatibility
     /// <summary>
     /// PKG2 KMST 1198+: first entry uses ReadPkg2DirString with pkg2 key, rest use ReadString with pkg1 key.
     /// </summary>
-    internal sealed class Pkg2KmstDirStringReader : IPkg2DirStringReader
+    internal sealed class Pkg2MixedKeyDirStringReader : IPkg2DirStringReader
     {
-        public Pkg2KmstDirStringReader(IWzDecrypter pkg2Keys, IWzDecrypter pkg1Keys)
+        public Pkg2MixedKeyDirStringReader(IWzDecrypter pkg2Keys, IWzDecrypter pkg1Keys)
         {
             this.pkg2Keys = pkg2Keys;
             this.pkg1Keys = pkg1Keys;
@@ -45,6 +45,26 @@ namespace WzComparerR2.WzLib.Compatibility
         public string ReadName(WzBinaryReader reader, bool isFirstEntry)
         {
             return isFirstEntry ? reader.ReadPkg2DirString(pkg2Keys) : reader.ReadString(pkg1Keys);
+        }
+    }
+
+    /// <summary>
+    /// 64-bit PKG2: first entry uses ReadPkg2DirStringV2 (16bit length) with pkg2 key, rest use ReadString with pkg1 key.
+    /// </summary>
+    internal sealed class Pkg2MixedKeyDirStringReader64 : IPkg2DirStringReader
+    {
+        public Pkg2MixedKeyDirStringReader64(IWzDecrypter firstNameKey, IWzDecrypter pkg1Keys)
+        {
+            this.firstNameKey = firstNameKey;
+            this.pkg1Keys = pkg1Keys;
+        }
+
+        private readonly IWzDecrypter firstNameKey;
+        private readonly IWzDecrypter pkg1Keys;
+
+        public string ReadName(WzBinaryReader reader, bool isFirstEntry)
+        {
+            return isFirstEntry ? reader.ReadPkg2DirStringV2(firstNameKey) : reader.ReadString(pkg1Keys);
         }
     }
 }
